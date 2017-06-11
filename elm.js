@@ -9463,6 +9463,13 @@ var _user$project$PhotoGroove$initialModel = {
 	choosenSize: _user$project$PhotoGroove$Medium
 };
 var _user$project$PhotoGroove$Small = {ctor: 'Small'};
+var _user$project$PhotoGroove$LoadPhotos = function (a) {
+	return {ctor: 'LoadPhotos', _0: a};
+};
+var _user$project$PhotoGroove$initialCmd = A2(
+	_elm_lang$http$Http$send,
+	_user$project$PhotoGroove$LoadPhotos,
+	_elm_lang$http$Http$getString('http://elm-in-action.com/photos/list'));
 var _user$project$PhotoGroove$SetSize = function (a) {
 	return {ctor: 'SetSize', _0: a};
 };
@@ -9505,6 +9512,23 @@ var _user$project$PhotoGroove$update = F2(
 	function (msg, model) {
 		var _p2 = msg;
 		switch (_p2.ctor) {
+			case 'LoadPhotos':
+				if (_p2._0.ctor === 'Ok') {
+					var urls = A2(_elm_lang$core$String$split, ',', _p2._0._0);
+					var photos = A2(_elm_lang$core$List$map, _user$project$PhotoGroove$Photo, urls);
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								photos: photos,
+								selectedUrl: _elm_lang$core$List$head(urls)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 			case 'SelectByIndex':
 				var newSelectedUrl = A2(
 					_elm_lang$core$Maybe$map,
@@ -9685,10 +9709,10 @@ var _user$project$PhotoGroove$view = function (model) {
 };
 var _user$project$PhotoGroove$main = _elm_lang$html$Html$program(
 	{
-		init: {ctor: '_Tuple2', _0: _user$project$PhotoGroove$initialModel, _1: _elm_lang$core$Platform_Cmd$none},
+		init: {ctor: '_Tuple2', _0: _user$project$PhotoGroove$initialModel, _1: _user$project$PhotoGroove$initialCmd},
 		view: _user$project$PhotoGroove$view,
 		update: _user$project$PhotoGroove$update,
-		subscriptions: function (model) {
+		subscriptions: function (_p3) {
 			return _elm_lang$core$Platform_Sub$none;
 		}
 	})();

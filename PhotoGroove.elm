@@ -31,6 +31,7 @@ type Msg
     | SelectByIndex Int
     | SurpriseMe
     | SetSize ThumbnailSize
+    | LoadPhotos (Result Http.Error String)
 
 
 initialModel : Model
@@ -42,6 +43,13 @@ initialModel =
     }
 
 
+initialCmd : Cmd Msg
+initialCmd =
+    "http://elm-in-action.com/photos/list"
+        |> Http.getString
+        |> Http.send LoadPhotos
+
+
 urlPrefix : String
 urlPrefix =
     "http://elm-in-action.com/"
@@ -50,6 +58,24 @@ urlPrefix =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        LoadPhotos (Ok result) ->
+            let
+                urls =
+                    String.split "," result
+
+                photos =
+                    List.map Photo urls
+            in
+                ( { model
+                    | photos = photos
+                    , selectedUrl = List.head urls
+                  }
+                , Cmd.none
+                )
+
+        LoadPhotos (Err _) ->
+            ( model, Cmd.none )
+
         SelectByIndex index ->
             let
                 newSelectedUrl : Maybe String
@@ -138,8 +164,8 @@ sizeToString size =
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initialModel, Cmd.none )
+        { init = ( initialModel, initialCmd )
         , view = view
         , update = update
-        , subscriptions = (\model -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         }
